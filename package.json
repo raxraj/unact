@@ -1,0 +1,19 @@
+{
+  "name": "unact",
+  "version": "0.1.0",
+  "description": "Deterministic, signal-based UI runtime – MVP",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node index.ts",
+    "test": "ts-node test.ts"
+  },
+  "keywords": ["signals", "reactive", "runtime", "ui"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.12.7"
+  }
+}
