@@ -32,10 +32,12 @@ Unact eliminates these problems by design:
 ## Installation
 
 ```bash
-npm install          # install dev deps (TypeScript, ts-node)
+npm install          # install dev deps (TypeScript, ts-node, esbuild)
 npm test             # run unit tests
-npm run dev          # run counter + digital-clock demo
-npm run build        # compile to dist/
+npm run dev          # run counter + digital-clock demo (Node / terminal)
+npm run serve        # start the Pokédex UI example on http://localhost:3000
+npm run build        # compile Node demos to dist/
+npm run build:app    # bundle browser app to dist-app/bundle.js
 ```
 
 No runtime third-party dependencies are required.
@@ -333,7 +335,7 @@ Expected output:
 
 | Feature | How to add |
 |---|---|
-| **DOM rendering** | Add a `mount(scope, () => HTMLElement)` helper that calls `createEffect` to patch DOM on signal change |
+| **DOM rendering** | ✅ Implemented in `dom.ts` — `render()`, `h()`, `Fragment`, reactive props/children |
 | **Async resources** | Add `createResource(scope, asyncFn)` returning a `{ data, loading, error }` signal-set; integrate with `transaction()` on resolve |
 | **SSR / resumability** | Serialize signal values to JSON; on the client, hydrate by calling `signal(deserializedValue)` instead of the default |
 | **Compiler / pure-render lint** | Write a TypeScript ESLint rule that flags `signal.set()` calls inside functions decorated with `@pure` or returned from component functions |
@@ -342,15 +344,93 @@ Expected output:
 
 ---
 
+## DOM layer & JSX syntax
+
+`dom.ts` adds a reactive DOM renderer on top of the core runtime. Configure your
+`tsconfig.json` with `"jsxFactory": "h"` and `"jsxFragmentFactory": "Fragment"`
+(see `tsconfig.app.json`) and you can write idiomatic JSX/TSX:
+
+```tsx
+/** @jsx h */
+import { h, render } from "./dom";
+import { signal, derived } from "./runtime";
+
+function Counter() {
+  const count  = signal(0);
+  const double = derived(() => count.get() * 2);
+
+  return (
+    <div>
+      {/* Reactive text: wrap in () => to re-evaluate on signal change */}
+      <p>Count: {() => count.get()} — Double: {() => double.get()}</p>
+      <button onClick={() => count.set(count.get() + 1)}>Increment</button>
+    </div>
+  );
+}
+
+render(() => <Counter />, document.getElementById("root")!);
+```
+
+### Reactivity conventions
+
+| Child / prop value | Behaviour |
+|---|---|
+| `"static string"` or `42` | Static – never updates |
+| `() => signal.get()` | **Reactive** – updates the DOM node whenever the signal changes |
+| `signal` / `derived` instance | **Reactive** – shorthand for `() => signal.get()` |
+| `onClick`, `onInput`, … | Attached with `addEventListener`; cleaned up when the scope is disposed |
+| `ref={(el) => …}` | Callback ref – called once with the real DOM element after creation |
+
+### Component functions
+
+A component is any function that accepts a `props` object and returns a `Node`:
+
+```tsx
+function Badge({ label, color }: { label: string; color: string }) {
+  return <span style={{ backgroundColor: color }}>{label}</span>;
+}
+
+// Use it in JSX like any other element:
+<Badge label="fire" color="#F08030" />
+```
+
+---
+
+## Pokédex example
+
+A real-world UI example lives in `examples/pokedex/`. It demonstrates:
+
+- **JSX components** with typed props
+- **`signal`** for search query, loading, and error state
+- **`derived`** for a filtered Pokémon list that updates automatically as you type
+- **Async data fetching** integrated through signals (no framework magic needed)
+- **Reactive conditional rendering** — loading → error → grid
+
+```bash
+npm run serve    # → http://localhost:3000
+```
+
+---
+
 ## File structure
 
 ```
 unact/
-├── runtime.ts   – core primitives (signal, derived, transaction, scope)
-├── index.ts     – runnable demos (Counter + Digital Clock)
-├── test.ts      – self-contained unit tests (no test runner required)
-├── package.json
-└── tsconfig.json
+├── runtime.ts              – core primitives (signal, derived, transaction, scope)
+├── dom.ts                  – reactive DOM renderer + JSX factory (h / Fragment / render)
+├── jsx.d.ts                – TypeScript JSX namespace declarations
+├── index.ts                – Node demos (Counter + Digital Clock)
+├── test.ts                 – self-contained unit tests (no test runner required)
+├── server.ts               – esbuild-powered dev server
+├── tsconfig.json           – Node build config
+├── tsconfig.app.json       – browser build config (DOM lib + JSX)
+├── examples/
+│   └── pokedex/
+│       ├── App.tsx         – Pokédex application component
+│       ├── main.tsx        – browser entry point
+│       ├── index.html      – HTML shell
+│       └── styles.css      – Pokédex styles
+└── package.json
 ```
 
 ---

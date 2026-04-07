@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "outDir": "dist-app",
+    "rootDir": "."
+  },
+  "include": [
+    "runtime.ts",
+    "dom.ts",
+    "jsx.d.ts",
+    "examples/**/*.ts",
+    "examples/**/*.tsx"
+  ]
+}

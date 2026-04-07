@@ -12,6 +12,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["runtime.ts", "index.ts", "test.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["runtime.ts", "index.ts", "test.ts", "server.ts"],
+  "exclude": ["node_modules", "dist", "dist-app", "examples", "dom.ts", "jsx.d.ts"]
 }
