@@ -5,15 +5,23 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "build:app": "esbuild examples/pokedex/main.tsx --bundle --format=iife --target=es2020 --jsx-factory=h --jsx-fragment=Fragment --outfile=dist-app/bundle.js",
     "start": "node dist/index.js",
     "dev": "ts-node index.ts",
+    "serve": "ts-node server.ts",
     "test": "ts-node test.ts"
   },
-  "keywords": ["signals", "reactive", "runtime", "ui"],
+  "keywords": [
+    "signals",
+    "reactive",
+    "runtime",
+    "ui"
+  ],
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.4.5",
+    "@types/node": "^20.12.7",
+    "esbuild": "^0.28.0",
     "ts-node": "^10.9.2",
-    "@types/node": "^20.12.7"
+    "typescript": "^5.4.5"
   }
 }
